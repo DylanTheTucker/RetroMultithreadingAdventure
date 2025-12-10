@@ -67,6 +67,11 @@ public class BattleManager {
         
         // Resume the game after battle
         gameManager.setBattleInProgress(false);
+        
+        // Notify the game loop to continue
+        synchronized(gameManager.getStepLock()) {
+            gameManager.getStepLock().notifyAll();
+        }
     }
     
     /**

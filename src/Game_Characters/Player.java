@@ -76,7 +76,7 @@ public class Player extends GameCharacter implements CanStep {
         }
     }
 
-    public synchronized void run() {
+    public void run() {
         System.out.println("The brave Knight sets out on a quest to slay the dragon!");
         Random rand = new Random();
         try {

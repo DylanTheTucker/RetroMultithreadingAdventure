@@ -134,12 +134,10 @@ public class PlayerInputHandler {
      * @param battleInteraction The AttackInteraction to handle
      */
     public void handleBattleInteraction(Interaction battleInteraction) {
-        synchronized(inputLock) {
-            waitingForInput = true;
-            handleInteraction(battleInteraction);
-            waitingForInput = false;
-            inputLock.notifyAll();
-        }
+        // Don't hold the lock during the entire battle
+        waitingForInput = true;
+        handleInteraction(battleInteraction);
+        waitingForInput = false;
     }
     
     /**

@@ -1,11 +1,13 @@
 ---------READ ME-------------
+DYLAN TUCKER
+CSC 325 - FA25
 
 PROJECT NAME:
 - The Knight's Journey
 
 SUMMARY:
 
-- This game will be a choose your own adventure text game that will work by having the player take "steps" where along the way they will encounter enemies at specific points, or two other enemies based on where the enemies (currently a thief and wizard) are at by steps
+- You play as a knight going on an adventure to defeat a powerful wizard. Along the way the knight encounters strange foes, and has to flee the wizard until they've gained enough strength to fight...
 
 TECHNOLOGIES:
 
@@ -25,6 +27,40 @@ Setup instructions:
 CONTRIBUTORS AND RESPONSIBILITIES:
 
 - Dylan Tucker > Developer
+
+Multithreading Use:
+
+    - Will primarily occur in the GameManager class so that each game character can be passed in as a thread and an AtomicInteger counter will keep track of every "step." This way all multithreading implementation is kept in one place when necessary, with the only exception being implementing the Runnable interface.
+    
+    Thread Architecture:
+    - Player Thread: Independent thread for player character, waits on stepLock for notifications
+    - StepManager Thread: Monitors global step counter and spawns enemy encounters
+    - CharacterEnemy Threads (Thief, Wizard): Independent threads that intelligently pursue/retreat
+    - Basic enemies (Slimes, TickiBirds) implement Runnable but do NOT run as separate threads; they execute battles synchronously on the game thread
+    
+    Thread Coordination:
+    - Uses wait/notify pattern with stepLock for step synchronization
+    - Volatile flags (battleInProgress, shouldPlayerMove, playerHasMoved) for state management
+    - AtomicInteger for thread-safe counters (globalStepCounter, notificationCounter)
+    - Thread.join() for proper thread termination at game end
+    
+    Concurrency Mechanisms:
+    - Synchronized methods: Player.gainExperience(), record statistics methods
+    - Synchronized blocks with explicit locks: Player gold/loot management (resourceLock)
+    - Dedicated locks: stepLock (game progression), resourceLock (player resources), inputLock (user input)
+    - Prevents race conditions on shared resources (experience, gold, battle statistics)
+
+API IDEA:
+
+    - An idea for an API I could use is one meant to enable multiplayer in the game. Maybe players either step together and get a turn to attack, or they step separately and the game is sort of like a race to the end. The API would call for data shared between the players and then use the data to sync their gameplay together.
+
+CONTINUATION IDEAS:
+    - Breaking apart/ simplifying GameManager and StepManager
+    - Adding more enemies or character enemies
+    - Giving Thief and wizard more unique abilities
+    - Player unlocking attacks every few levels
+    - Items
+    - Creating non-enemy steppable characters like a wandering salesman or somthing similar
 
 Classes, Interfaces, Superclasses, cont.:
 
@@ -144,33 +180,6 @@ Classes, Interfaces, Superclasses, cont.:
     - Handles specific attack target selection and damage calculation
     - Uses lambda expression with removeIf() to process defeated enemies
     - Awards experience and gold when enemies are defeated
-
-Multithreading Use:
-
-    - Will primarily occur in the GameManager class so that each game character can be passed in as a thread and an AtomicInteger counter will keep track of every "step." This way all multithreading implementation is kept in one place when necessary, with the only exception being implementing the Runnable interface.
-    
-    Thread Architecture:
-    - Player Thread: Independent thread for player character, waits on stepLock for notifications
-    - StepManager Thread: Monitors global step counter and spawns enemy encounters
-    - CharacterEnemy Threads (Thief, Wizard): Independent threads that intelligently pursue/retreat
-    - Basic enemies (Slimes, TickiBirds) implement Runnable but do NOT run as separate threads; they execute battles synchronously on the game thread
-    
-    Thread Coordination:
-    - Uses wait/notify pattern with stepLock for step synchronization
-    - Volatile flags (battleInProgress, shouldPlayerMove, playerHasMoved) for state management
-    - AtomicInteger for thread-safe counters (globalStepCounter, notificationCounter)
-    - Thread.join() for proper thread termination at game end
-    
-    Concurrency Mechanisms:
-    - Synchronized methods: Player.gainExperience(), record statistics methods
-    - Synchronized blocks with explicit locks: Player gold/loot management (resourceLock)
-    - Dedicated locks: stepLock (game progression), resourceLock (player resources), inputLock (user input)
-    - Prevents race conditions on shared resources (experience, gold, battle statistics)
-
-API IDEA:
-
-    - An idea for an API I could use is one meant to enable multiplayer in the game. Maybe players either step together and get a turn to attack, or they step separately and the game is sort of like a race to the end. The API would call for data shared between the players and then use the data to sync their gameplay together.
-
 
 
 METHOD IMPLEMENTATION:
